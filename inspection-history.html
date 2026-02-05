@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검수 이력 - AdSafe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 네비게이션 -->
+    <nav class="navbar navbar-custom">
+        <div class="container-main">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="index.html">AdSafe</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="index.html" class="nav-link text-decoration-none">대시보드</a>
+                    <a href="adsafe.html" class="nav-link text-decoration-none">검수하기</a>
+                    <a href="learning-dashboard.html" class="nav-link text-decoration-none">학습 현황</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container-main py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="mb-2">검수 이력</h1>
+                <p class="text-muted">과거 검수 실행 내역을 조회할 수 있습니다.</p>
+            </div>
+            <a href="adsafe.html" class="btn btn-primary-custom">
+                <i class="bi bi-plus-circle me-2"></i>새 검수
+            </a>
+        </div>
+
+        <!-- 필터 -->
+        <div class="card-custom mb-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">광고 유형</label>
+                    <select class="form-select form-control-custom" id="filter-project" disabled title="추후 지원 예정">
+                        <option value="">전체</option>
+                        <option value="이벤트·할인">이벤트·할인</option>
+                        <option value="시술·진료 소개">시술·진료 소개</option>
+                        <option value="치료효과·경험담">치료효과·경험담</option>
+                        <option value="의료기관 소개">의료기관 소개</option>
+                        <option value="비교·우위">비교·우위</option>
+                        <option value="가격·패키지">가격·패키지</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">위험도</label>
+                    <select class="form-select form-control-custom" id="filter-level">
+                        <option value="">전체</option>
+                        <option value="none">신호 없음</option>
+                        <option value="low">낮음</option>
+                        <option value="medium">보통</option>
+                        <option value="high">높음</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">기간</label>
+                    <select class="form-select form-control-custom" id="filter-date">
+                        <option value="7">최근 7일</option>
+                        <option value="30">최근 30일</option>
+                        <option value="90">최근 3개월</option>
+                        <option value="">전체</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-custom w-100" id="btn-filter-search">검색</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 테이블 -->
+        <div class="card-custom p-0">
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>실행일시</th>
+                            <th>광고 유형</th>
+                            <th>문구 제목</th>
+                            <th>요약 위험도</th>
+                            <th>적발 건수</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inspection-tbody">
+                        <!-- 검수 이력은 JS에서 localStorage 기반으로 렌더링 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 페이지네이션 (JS에서 데이터 기준으로 렌더링) -->
+        <nav aria-label="페이지 네비게이션" class="mt-4" id="pagination-nav" style="display: none;">
+            <ul class="pagination justify-content-center mb-0" id="pagination-ul"></ul>
+        </nav>
+    </div>
+
+    <div class="footer-notice">
+        <div class="container-main">
+            본 서비스는 참고용이며 법적 판정이 아닙니다. 최종 책임은 사용자에게 있습니다.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>if(!window.AdSafeAuth.getCurrentUser()){window.location.href='login.html';}</script>
+    <script src="main.js"></script>
+    <script src="js/rules-data.js"></script>
+    <script>
+        (function() {
+            var PAGE_SIZE = 10;
+            var currentPage = 1;
+            var totalItems = 0;
+            var totalPages = 1;
+            var tbody = document.getElementById('inspection-tbody');
+            var paginationNav = document.getElementById('pagination-nav');
+            var paginationUl = document.getElementById('pagination-ul');
+            var apiBase = (window.ADSAFE_API_URL || '').replace(/\/$/, '');
+
+            function formatDate(r) {
+                var d = new Date(r.date);
+                return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+            }
+            function renderTable(list) {
+                if (!tbody) return;
+                if (!list || list.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">검수 이력이 없습니다. <a href="adsafe.html">새 검수</a>를 실행해 보세요.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                list.forEach(function(r) {
+                    var dateStr = formatDate(r);
+                    var summary = (r.result && r.result.summary) ? r.result.summary : {};
+                    var level = summary.level || 'none';
+                    var count = summary.totalFindings != null ? summary.totalFindings : 0;
+                    var levelText = typeof getRiskLevelText === 'function' ? getRiskLevelText(level) : level;
+                    var tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + dateStr + '</td><td>' + (r.project || '-') + '</td><td>' + (r.title || '-') + '</td><td><span class="badge-custom badge-' + level + '">' + levelText + '</span></td><td>' + count + '건</td><td><a href="inspection-detail.html?id=' + r.id + '" class="btn btn-sm btn-outline-custom">상세보기</a></td>';
+                    tbody.appendChild(tr);
+                });
+            }
+            function renderPagination() {
+                if (!paginationNav || !paginationUl) return;
+                if (totalItems === 0 || totalPages <= 1) {
+                    paginationNav.style.display = 'none';
+                    return;
+                }
+                paginationNav.style.display = 'block';
+                paginationUl.innerHTML = '';
+                var prevLi = document.createElement('li');
+                prevLi.className = 'page-item' + (currentPage <= 1 ? ' disabled' : '');
+                prevLi.innerHTML = '<a class="page-link" href="#" tabindex="-1" data-page="prev">이전</a>';
+                if (currentPage > 1) {
+                    prevLi.querySelector('a').addEventListener('click', function(e) { e.preventDefault(); loadPage(currentPage - 1); });
+                }
+                paginationUl.appendChild(prevLi);
+                for (var p = 1; p <= totalPages; p++) {
+                    (function(page) {
+                        var li = document.createElement('li');
+                        li.className = 'page-item' + (currentPage === page ? ' active' : '');
+                        var a = document.createElement('a');
+                        a.className = 'page-link';
+                        a.href = '#';
+                        a.setAttribute('data-page', page);
+                        a.textContent = page;
+                        a.addEventListener('click', function(e) { e.preventDefault(); loadPage(page); });
+                        li.appendChild(a);
+                        paginationUl.appendChild(li);
+                    })(p);
+                }
+                var nextLi = document.createElement('li');
+                nextLi.className = 'page-item' + (currentPage >= totalPages ? ' disabled' : '');
+                nextLi.innerHTML = '<a class="page-link" href="#" data-page="next">다음</a>';
+                if (currentPage < totalPages) {
+                    nextLi.querySelector('a').addEventListener('click', function(e) { e.preventDefault(); loadPage(currentPage + 1); });
+                }
+                paginationUl.appendChild(nextLi);
+            }
+            // 필터 값을 읽어 쿼리 파라미터 생성
+            function getFilterParams() {
+                var levelEl = document.getElementById('filter-level');
+                var dateEl = document.getElementById('filter-date');
+                var level = (levelEl && levelEl.value) ? levelEl.value : '';
+                var dateVal = (dateEl && dateEl.value) ? dateEl.value : '';
+                var dateFrom = '', dateTo = '';
+                if (dateVal) {
+                    var days = parseInt(dateVal, 10);
+                    if (!isNaN(days) && days > 0) {
+                        var end = new Date();
+                        var start = new Date();
+                        start.setDate(start.getDate() - days);
+                        dateTo = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');
+                        dateFrom = start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0');
+                    }
+                }
+                return { level: level, date_from: dateFrom, date_to: dateTo };
+            }
+            function buildQueryString(page) {
+                var q = 'page=' + page + '&limit=' + PAGE_SIZE;
+                var f = getFilterParams();
+                if (f.level) q += '&level=' + encodeURIComponent(f.level);
+                if (f.date_from) q += '&date_from=' + encodeURIComponent(f.date_from);
+                if (f.date_to) q += '&date_to=' + encodeURIComponent(f.date_to);
+                return q;
+            }
+            var ngrokHeaders = { 'ngrok-skip-browser-warning': 'true' };
+            function loadPage(page) {
+                currentPage = page;
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">불러오는 중...</td></tr>';
+                var query = buildQueryString(currentPage);
+                fetch(apiBase + '/api/inspection-history?' + query, { headers: ngrokHeaders })
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        var items = data.items || [];
+                        totalItems = data.total != null ? data.total : 0;
+                        totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+                        renderTable(items);
+                        renderPagination();
+                    })
+                    .catch(function(err) {
+                        console.error(err);
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">검수 이력을 불러올 수 없습니다. (' + (err && err.message ? err.message : '요청 실패') + ')<br>XAMPP Apache가 실행 중인지, `http://localhost/AdSafe/api/health`가 열리는지 확인하세요.</td></tr>';
+                        paginationNav.style.display = 'none';
+                    });
+            }
+            // 검색 버튼 클릭 시 필터 적용하여 1페이지부터 다시 로드
+            var btnFilter = document.getElementById('btn-filter-search');
+            if (btnFilter) {
+                btnFilter.addEventListener('click', function() { loadPage(1); });
+            }
+            loadPage(1);
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdSafe 검수 - AdSafe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 네비게이션 -->
+    <nav class="navbar navbar-custom">
+        <div class="container-main">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="index.html">AdSafe</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="index.html" class="nav-link text-decoration-none">대시보드</a>
+                    <a href="inspection-history.html" class="nav-link text-decoration-none">검수 이력</a>
+                    <a href="learning-dashboard.html" class="nav-link text-decoration-none">학습 현황</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container-main py-5">
+        <div class="mb-4">
+            <h1 class="mb-2">AdSafe 검수</h1>
+            <p class="text-muted">광고 문구를 입력하고 규제 리스크를 검수하세요.</p>
+        </div>
+
+        <!-- 입력 영역 -->
+        <div class="card-custom mb-4">
+            <h5 class="card-title">광고 문구 입력</h5>
+            <div class="mb-3">
+                <label for="project-select" class="form-label">광고 유형</label>
+                <select class="form-select form-control-custom" id="project-select">
+                    <option value="">선택</option>
+                    <option value="event_discount">이벤트·할인</option>
+                    <option value="procedure_intro">시술·진료 소개</option>
+                    <option value="treatment_experience">치료효과·경험담</option>
+                    <option value="clinic_intro">의료기관 소개</option>
+                    <option value="comparison">비교·우위</option>
+                    <option value="price_package">가격·패키지</option>
+                    <option value="other">기타</option>
+                </select>
+                <div class="form-text">의료법·의료광고 가이드라인 기준 유형입니다.</div>
+            </div>
+            <div class="mb-3">
+                <label for="ad-title" class="form-label">문구 제목</label>
+                <input type="text" class="form-control form-control-custom" id="ad-title" placeholder="예: 이벤트·할인 광고 문구">
+            </div>
+            <div class="mb-3">
+                <label for="ad-text" class="form-label">광고 문구</label>
+                <textarea class="form-control form-control-custom" id="ad-text" rows="8" placeholder="검수할 광고 문구를 입력하세요..."></textarea>
+                <div class="form-text">입력한 문구는 전처리 후 룰엔진으로 검수됩니다.</div>
+            </div>
+            <button type="button" class="btn btn-primary-custom" id="btn-inspect">
+                <i class="bi bi-shield-check me-2"></i>검수하기
+            </button>
+        </div>
+
+        <!-- 결과 영역 (초기 숨김) -->
+        <div id="inspection-result" style="display: none;"></div>
+    </div>
+
+    <div class="footer-notice">
+        <div class="container-main">
+            본 서비스는 참고용이며 법적 판정이 아닙니다. 최종 책임은 사용자에게 있습니다.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>if(!window.AdSafeAuth.getCurrentUser()){window.location.href='login.html';}</script>
+    <script src="js/normalize.js?v=2"></script>
+    <script src="js/rules-data.js?v=2"></script>
+    <script src="js/inspection-engine.js?v=2"></script>
+    <script src="main.js?v=2"></script>
+</body>
+</html>

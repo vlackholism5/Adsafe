@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>룰 관리 - 어드민 콘솔</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <!-- 네비게이션 -->
+    <nav class="navbar navbar-custom">
+        <div class="container-main">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="../index.html">AdSafe</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="../index.html" class="nav-link text-decoration-none">대시보드</a>
+                    <span class="text-muted">|</span>
+                    <span class="text-primary fw-bold">어드민 콘솔</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 사이드바 -->
+            <div class="col-md-3 col-lg-2 sidebar-admin">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="users.html">
+                            <i class="bi bi-people me-2"></i>사용자 관리
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="taxonomy.html">
+                            <i class="bi bi-diagram-3 me-2"></i>리스크 택소노미
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="ruleset.html">
+                            <i class="bi bi-collection me-2"></i>룰셋 버전
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="rules.html">
+                            <i class="bi bi-list-check me-2"></i>룰 관리
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="audit.html">
+                            <i class="bi bi-journal-text me-2"></i>감사 로그
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 메인 컨텐츠 -->
+            <div class="col-md-9 col-lg-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="mb-2">룰 관리</h1>
+                        <p class="text-muted">룰셋 버전별 룰을 관리합니다.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-control-custom" id="rules-version-select" style="width: auto;">
+                            <!-- js에서 ADU_RULE_SET_VERSIONS 기반 채움 -->
+                        </select>
+                        <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addRuleModal">
+                            <i class="bi bi-plus-circle me-2"></i>룰 추가
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 필터 -->
+                <div class="card-custom mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">리스크 코드</label>
+                            <select class="form-select form-control-custom" id="filter-risk-code">
+                                <option value="">전체</option>
+                                <!-- js에서 ADU_RULES 기반 채움 -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">룰 유형</label>
+                            <select class="form-select form-control-custom" id="filter-type">
+                                <option value="">전체</option>
+                                <option value="keyword">keyword</option>
+                                <option value="regex">regex</option>
+                                <option value="combo">combo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">위험도</label>
+                            <select class="form-select form-control-custom" id="filter-level">
+                                <option value="">전체</option>
+                                <option value="low">낮음</option>
+                                <option value="medium">보통</option>
+                                <option value="high">높음</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-custom w-100" id="rules-filter-btn">검색</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 룰 테이블 -->
+                <div class="card-custom p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0">
+                            <thead>
+                                <tr>
+                                    <th>룰명</th>
+                                    <th>리스크 코드</th>
+                                    <th>유형</th>
+                                    <th>패턴</th>
+                                    <th>위험도</th>
+                                    <th>상태</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-tbody">
+                                <!-- js/rules-data.js(ADU_RULES) 기반 동적 렌더링 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 룰 추가/수정 모달 -->
+    <div class="modal fade" id="addRuleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">룰 추가</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="rule-name" class="form-label">룰명</label>
+                            <input type="text" class="form-control form-control-custom" id="rule-name" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="rule-risk-code" class="form-label">리스크 코드</label>
+                                <select class="form-select form-control-custom" id="rule-risk-code">
+                                    <!-- js에서 ADU_RULES 기반 채움 -->
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="rule-type" class="form-label">룰 유형</label>
+                                <select class="form-select form-control-custom" id="rule-type">
+                                    <option value="keyword">keyword</option>
+                                    <option value="regex">regex</option>
+                                    <option value="numeric">numeric</option>
+                                    <option value="combo">combo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rule-pattern" class="form-label">패턴</label>
+                            <textarea class="form-control form-control-custom" id="rule-pattern" rows="3" placeholder="키워드 또는 정규식 패턴"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="rule-severity" class="form-label">위험도</label>
+                                <select class="form-select form-control-custom" id="rule-severity">
+                                    <option value="low">낮음</option>
+                                    <option value="medium">보통</option>
+                                    <option value="high">높음</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">활성화</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="rule-active" checked>
+                                    <label class="form-check-label" for="rule-active">활성</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rule-explanation" class="form-label">설명 템플릿</label>
+                            <textarea class="form-control form-control-custom" id="rule-explanation" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary-custom">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editRuleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">룰 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editRuleForm">
+                        <div class="mb-3">
+                            <label class="form-label">판정단위(룰명)</label>
+                            <input type="text" class="form-control form-control-custom" id="edit-rule-level3" readonly>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">리스크 코드</label>
+                                <input type="text" class="form-control form-control-custom" id="edit-rule-riskCode" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">위험도</label>
+                                <select class="form-select form-control-custom" id="edit-rule-riskLevel">
+                                    <option value="low">낮음</option>
+                                    <option value="medium">보통</option>
+                                    <option value="high">높음</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">대분류</label>
+                                <input type="text" class="form-control form-control-custom" id="edit-rule-level1">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">중분류</label>
+                                <input type="text" class="form-control form-control-custom" id="edit-rule-level2">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">판정단위</label>
+                                <input type="text" class="form-control form-control-custom" id="edit-rule-level3-edit">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">키워드 (쉼표 구분)</label>
+                            <textarea class="form-control form-control-custom" id="edit-rule-keywords" rows="2" placeholder="최고, 최상, 유일"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">설명</label>
+                            <textarea class="form-control form-control-custom" id="edit-rule-explanation" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">수정 가이드</label>
+                            <textarea class="form-control form-control-custom" id="edit-rule-suggestion" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary-custom" id="editRuleSave">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-notice">
+        <div class="container-main">
+            본 서비스는 참고용이며 법적 판정이 아닙니다. 최종 책임은 사용자에게 있습니다.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/rules-data.js"></script>
+    <script src="../js/rule-set-versions.js"></script>
+    <script src="../main.js"></script>
+    <script>
+(function() {
+    var riskLevelLabel = { high: '높음', medium: '보통', low: '낮음' };
+    var riskLevelBadge = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
+
+    function getRuleType(rule) {
+        var hasKeywords = rule.keywords && rule.keywords.length > 0;
+        var hasRegex = rule.regex && rule.regex.length > 0;
+        if (hasKeywords && hasRegex) return { type: 'combo', badge: 'bg-secondary' };
+        if (hasRegex) return { type: 'regex', badge: 'bg-warning' };
+        return { type: 'keyword', badge: 'bg-info' };
+    }
+
+    function getPatternPreview(rule) {
+        var parts = [];
+        if (rule.keywords && rule.keywords.length) parts.push(rule.keywords.slice(0, 5).join(', ') + (rule.keywords.length > 5 ? '…' : ''));
+        if (rule.regex && rule.regex.length) parts.push(rule.regex.slice(0, 2).join(' / ') + (rule.regex.length > 2 ? '…' : ''));
+        return parts.join(' | ') || '-';
+    }
+
+    function getRuleName(rule) {
+        return rule.level3 || (rule.level1 + ' - ' + rule.level2) || rule.riskCode;
+    }
+
+    function escapeHtml(s) {
+        if (s == null) return '';
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    function getFilteredRules() {
+        if (!window.ADU_RULES || !Array.isArray(window.ADU_RULES)) return [];
+        var list = window.ADU_RULES.slice();
+        var riskCode = document.getElementById('filter-risk-code') && document.getElementById('filter-risk-code').value;
+        var type = document.getElementById('filter-type') && document.getElementById('filter-type').value;
+        var level = document.getElementById('filter-level') && document.getElementById('filter-level').value;
+        if (riskCode) list = list.filter(function(r) { return r.riskCode === riskCode; });
+        if (type) list = list.filter(function(r) { return getRuleType(r).type === type; });
+        if (level) list = list.filter(function(r) { return r.riskLevel === level; });
+        return list;
+    }
+
+    function fillVersionSelect() {
+        var sel = document.getElementById('rules-version-select');
+        if (!sel) return;
+        var list = [];
+        try {
+            var raw = localStorage.getItem('adsafe_ruleset_versions');
+            if (raw) list = JSON.parse(raw);
+        } catch (e) {}
+        if (!list.length && window.ADU_RULE_SET_VERSIONS) list = window.ADU_RULE_SET_VERSIONS;
+        sel.innerHTML = '';
+        list.forEach(function(v) {
+            var opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = v.versionName + (v.status === 'active' ? ' (활성)' : '');
+            if (v.status === 'active') opt.selected = true;
+            sel.appendChild(opt);
+        });
+        if (!list.length) {
+            var opt = document.createElement('option');
+            opt.textContent = '현재 룰셋';
+            sel.appendChild(opt);
+        }
+    }
+
+    function fillRiskCodeFilter() {
+        var sel = document.getElementById('filter-risk-code');
+        if (!sel || !window.ADU_RULES) return;
+        var codes = window.ADU_RULES.map(function(r) { return r.riskCode; });
+        var unique = codes.filter(function(c, i) { return codes.indexOf(c) === i; });
+        sel.innerHTML = '<option value="">전체</option>';
+        unique.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            sel.appendChild(opt);
+        });
+    }
+
+    function fillAddRuleRiskCode() {
+        var sel = document.getElementById('rule-risk-code');
+        if (!sel || !window.ADU_RULES) return;
+        sel.innerHTML = '';
+        window.ADU_RULES.forEach(function(r) {
+            var opt = document.createElement('option');
+            opt.value = r.riskCode;
+            opt.textContent = r.riskCode;
+            sel.appendChild(opt);
+        });
+    }
+
+    function renderTable() {
+        var tbody = document.getElementById('rules-tbody');
+        var list = getFilteredRules();
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        list.forEach(function(rule) {
+            var typeInfo = getRuleType(rule);
+            var levelLabel = riskLevelLabel[rule.riskLevel] || rule.riskLevel;
+            var badgeClass = riskLevelBadge[rule.riskLevel] || 'badge-medium';
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td>' + escapeHtml(getRuleName(rule)) + '</td>' +
+                '<td><code>' + escapeHtml(rule.riskCode) + '</code></td>' +
+                '<td><span class="badge ' + typeInfo.badge + '">' + typeInfo.type + '</span></td>' +
+                '<td><small class="text-muted">' + escapeHtml(getPatternPreview(rule)) + '</small></td>' +
+                '<td><span class="badge-custom ' + badgeClass + '">' + escapeHtml(levelLabel) + '</span></td>' +
+                '<td><span class="badge bg-success">활성</span></td>' +
+                '<td><button type="button" class="btn btn-sm btn-outline-custom btn-edit-rule" data-risk-code="' + escapeHtml(rule.riskCode) + '">수정</button></td>';
+            tbody.appendChild(tr);
+        });
+        tbody.querySelectorAll('.btn-edit-rule').forEach(function(btn) {
+            btn.addEventListener('click', openEditModal);
+        });
+    }
+
+    function openEditModal(e) {
+        var riskCode = e.currentTarget.getAttribute('data-risk-code');
+        var rule = window.ADU_RULES && window.ADU_RULES.find(function(r) { return r.riskCode === riskCode; });
+        if (!rule) return;
+        document.getElementById('edit-rule-riskCode').value = rule.riskCode;
+        document.getElementById('edit-rule-level3').value = rule.level3 || '';
+        document.getElementById('edit-rule-riskLevel').value = rule.riskLevel || 'medium';
+        document.getElementById('edit-rule-level1').value = rule.level1 || '';
+        document.getElementById('edit-rule-level2').value = rule.level2 || '';
+        document.getElementById('edit-rule-level3-edit').value = rule.level3 || '';
+        document.getElementById('edit-rule-keywords').value = (rule.keywords && rule.keywords.join(', ')) || '';
+        document.getElementById('edit-rule-explanation').value = rule.explanation || '';
+        document.getElementById('edit-rule-suggestion').value = rule.suggestion || '';
+        var modal = new bootstrap.Modal(document.getElementById('editRuleModal'));
+        modal.show();
+    }
+
+    function init() {
+        fillVersionSelect();
+        fillRiskCodeFilter();
+        fillAddRuleRiskCode();
+        renderTable();
+        var btn = document.getElementById('rules-filter-btn');
+        if (btn) btn.addEventListener('click', function() { renderTable(); });
+        document.getElementById('editRuleSave').addEventListener('click', function() {
+            /* 저장 시 서버/로컬 반영은 추후 연동 */
+            bootstrap.Modal.getInstance(document.getElementById('editRuleModal')).hide();
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+    </script>
+</body>
+</html>

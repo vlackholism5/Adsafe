@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 관리 - 어드민 콘솔</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <!-- 네비게이션 -->
+    <nav class="navbar navbar-custom">
+        <div class="container-main">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="../index.html">AdSafe</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="../index.html" class="nav-link text-decoration-none">대시보드</a>
+                    <span class="text-muted">|</span>
+                    <span class="text-primary fw-bold">어드민 콘솔</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 사이드바 -->
+            <div class="col-md-3 col-lg-2 sidebar-admin">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="users.html">
+                            <i class="bi bi-people me-2"></i>사용자 관리
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="taxonomy.html">
+                            <i class="bi bi-diagram-3 me-2"></i>리스크 택소노미
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="ruleset.html">
+                            <i class="bi bi-collection me-2"></i>룰셋 버전
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="rules.html">
+                            <i class="bi bi-list-check me-2"></i>룰 관리
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="audit.html">
+                            <i class="bi bi-journal-text me-2"></i>감사 로그
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 메인 컨텐츠 -->
+            <div class="col-md-9 col-lg-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="mb-2">사용자 관리</h1>
+                        <p class="text-muted">워크스페이스 사용자 및 초대를 관리합니다.</p>
+                    </div>
+                    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                        <i class="bi bi-person-plus me-2"></i>사용자 초대
+                    </button>
+                </div>
+
+                <!-- 탭 -->
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#users">사용자</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#invitations">초대 대기</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- 사용자 탭 -->
+                    <div class="tab-pane fade show active" id="users">
+                        <div class="card-custom p-0">
+                            <div class="table-responsive">
+                                <table class="table table-custom mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>이름</th>
+                                            <th>이메일</th>
+                                            <th>권한</th>
+                                            <th>상태</th>
+                                            <th>가입일</th>
+                                            <th>작업</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-tbody">
+                                        <!-- js/auth.js(AdSafeAuth.getUsers) 기반 동적 렌더링 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 초대 대기 탭 -->
+                    <div class="tab-pane fade" id="invitations">
+                        <div class="card-custom p-0">
+                            <div class="table-responsive">
+                                <table class="table table-custom mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>이메일</th>
+                                            <th>권한</th>
+                                            <th>초대일</th>
+                                            <th>만료일</th>
+                                            <th>상태</th>
+                                            <th>작업</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invitations-tbody">
+                                        <!-- MVP: 초대 대기 목록 없음 -->
+                                        <tr><td colspan="6" class="text-center text-muted py-4">초대 대기 목록이 없습니다.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 초대 모달 -->
+    <div class="modal fade" id="inviteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">사용자 초대</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="invite-email" class="form-label">이메일</label>
+                            <input type="email" class="form-control form-control-custom" id="invite-email" placeholder="user@example.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="invite-role" class="form-label">권한</label>
+                            <select class="form-select form-control-custom" id="invite-role">
+                                <option value="editor">Editor</option>
+                                <option value="viewer">Viewer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary-custom">초대하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용자 수정 모달 -->
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">사용자 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="edit-user-email" value="">
+                        <div class="mb-3">
+                            <label class="form-label">이메일</label>
+                            <input type="email" class="form-control form-control-custom" id="edit-email-readonly" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-role" class="form-label">권한</label>
+                            <select class="form-select form-control-custom" id="edit-role">
+                                <option value="admin">Admin</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-status" class="form-label">상태</label>
+                            <select class="form-select form-control-custom" id="edit-status">
+                                <option value="active">활성</option>
+                                <option value="disabled">비활성</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary-custom" id="editUserSave">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-notice">
+        <div class="container-main">
+            본 서비스는 참고용이며 법적 판정이 아닙니다. 최종 책임은 사용자에게 있습니다.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../main.js"></script>
+    <script>
+(function() {
+    var currentEditUserId = null;
+
+    function roleLabel(r) { return r === 'admin' ? 'Admin' : 'User'; }
+    function roleBadge(r) { return r === 'admin' ? 'bg-info' : 'bg-secondary'; }
+    function formatDate(iso) {
+        if (!iso) return '-';
+        try {
+            var d = new Date(iso);
+            return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        } catch (e) { return '-'; }
+    }
+    function escapeHtml(s) {
+        if (s == null) return '';
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    function renderTable() {
+        var tbody = document.getElementById('users-tbody');
+        if (!tbody || typeof window.AdSafeAuth === 'undefined') return;
+        
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">불러오는 중...</td></tr>';
+        
+        // API에서 사용자 목록 가져오기
+        window.AdSafeAuth.getUsers(function(err, list) {
+            if (err) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">오류: ' + escapeHtml(err) + '</td></tr>';
+                return;
+            }
+            if (!list || list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">사용자가 없습니다.</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            list.forEach(function(u) {
+                var role = (u.role || 'user');
+                var status = (u.status || 'active');
+                var statusBadge = status === 'disabled' || status === 'inactive' 
+                    ? '<span class="badge bg-danger">비활성</span>' 
+                    : '<span class="badge bg-success">활성</span>';
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + escapeHtml(u.name || u.email) + '</td>' +
+                    '<td>' + escapeHtml(u.email) + '</td>' +
+                    '<td><span class="badge ' + roleBadge(role) + '">' + escapeHtml(roleLabel(role)) + '</span></td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td>' + formatDate(u.createdAt) + '</td>' +
+                    '<td><button type="button" class="btn btn-sm btn-outline-custom btn-edit-user" data-id="' + u.id + '" data-email="' + escapeHtml(u.email) + '" data-role="' + escapeHtml(role) + '" data-status="' + escapeHtml(status) + '">수정</button></td>';
+                tbody.appendChild(tr);
+            });
+            tbody.querySelectorAll('.btn-edit-user').forEach(function(btn) {
+                btn.addEventListener('click', openEditModal);
+            });
+        });
+    }
+
+    function openEditModal(e) {
+        var btn = e.currentTarget;
+        currentEditUserId = btn.getAttribute('data-id');
+        var email = btn.getAttribute('data-email');
+        var role = btn.getAttribute('data-role');
+        var status = btn.getAttribute('data-status');
+        
+        document.getElementById('edit-user-email').value = currentEditUserId;
+        document.getElementById('edit-email-readonly').value = email;
+        document.getElementById('edit-role').value = role || 'user';
+        document.getElementById('edit-status').value = status || 'active';
+        var modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    }
+
+    document.getElementById('editUserSave').addEventListener('click', function() {
+        if (!currentEditUserId) return;
+        var role = document.getElementById('edit-role').value;
+        var status = document.getElementById('edit-status').value;
+        
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = '저장 중...';
+        
+        window.AdSafeAuth.updateUser(currentEditUserId, { role: role, status: status }, function(err, result) {
+            btn.disabled = false;
+            btn.textContent = '저장';
+            
+            if (err) {
+                alert('수정 실패: ' + err);
+                return;
+            }
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            renderTable();
+        });
+    });
+
+    // 초대하기 버튼 (회원 생성)
+    var inviteBtn = document.querySelector('#inviteModal .btn-primary-custom');
+    if (inviteBtn) {
+        inviteBtn.addEventListener('click', function() {
+            var email = document.getElementById('invite-email').value.trim();
+            var role = document.getElementById('invite-role').value;
+            
+            if (!email) {
+                alert('이메일을 입력하세요.');
+                return;
+            }
+            
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = '초대 중...';
+            
+            // 임시 비밀번호로 사용자 생성
+            var tempPassword = 'Temp' + Math.random().toString(36).slice(2, 8) + '!';
+            
+            window.AdSafeAuth.signup(email, tempPassword, email.split('@')[0], function(err, user) {
+                btn.disabled = false;
+                btn.textContent = '초대하기';
+                
+                if (err) {
+                    alert('초대 실패: ' + err);
+                    return;
+                }
+                
+                // 권한 업데이트 (admin이 아닌 경우)
+                if (role !== 'user' && user.id) {
+                    window.AdSafeAuth.updateUser(user.id, { role: role }, function() {
+                        alert('사용자가 초대되었습니다.\n임시 비밀번호: ' + tempPassword);
+                        bootstrap.Modal.getInstance(document.getElementById('inviteModal')).hide();
+                        document.getElementById('invite-email').value = '';
+                        renderTable();
+                    });
+                } else {
+                    alert('사용자가 초대되었습니다.\n임시 비밀번호: ' + tempPassword);
+                    bootstrap.Modal.getInstance(document.getElementById('inviteModal')).hide();
+                    document.getElementById('invite-email').value = '';
+                    renderTable();
+                }
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderTable);
+    } else {
+        renderTable();
+    }
+})();
+    </script>
+</body>
+</html>

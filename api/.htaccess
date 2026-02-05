@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# /api/* 를 api/index.php 로 라우팅
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+

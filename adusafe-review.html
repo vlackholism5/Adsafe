@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>복습하기 - AduSafe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-custom">
+        <div class="container-main">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="index.html">AdSafe</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="adusafe-menu.html" class="nav-link text-decoration-none">AduSafe</a>
+                    <a href="learning-dashboard.html" class="nav-link text-decoration-none">학습 현황</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-main py-5">
+        <div class="mb-4">
+            <a href="adusafe-menu.html" class="text-decoration-none text-muted mb-2 d-inline-block">
+                <i class="bi bi-arrow-left me-1"></i>학습 메뉴로
+            </a>
+            <h1 class="mb-2">복습하기</h1>
+        </div>
+
+        <div id="review-content">
+            <!-- 복습할 내용이 있으면 JS에서 버튼으로 교체, 없으면 아래 메시지 유지 -->
+            <div class="card-custom text-center py-5" id="no-review-msg">
+                <i class="bi bi-journal-plus text-muted mb-3" style="font-size: 48px;"></i>
+                <h5 class="mb-2">복습할 내용이 없습니다</h5>
+                <p class="text-muted mb-4">학습하기를 먼저 진행한 뒤, 틀린 문제를 복습할 수 있습니다.</p>
+                <a href="adusafe-start.html" class="btn btn-primary-custom">
+                    <i class="bi bi-pencil-square me-2"></i>학습하기
+                </a>
+            </div>
+            <div id="has-review-msg" style="display: none;">
+                <div class="card-custom text-center py-4 mb-4">
+                    <p class="mb-2">이전에 틀린 문제 <strong id="review-count">0</strong>개를 복습합니다.</p>
+                    <button type="button" class="btn btn-primary-custom" id="btn-start-review">
+                        <i class="bi bi-arrow-right me-2"></i>복습 시작
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-notice">
+        <div class="container-main">
+            본 서비스는 참고용이며 법적 판정이 아닙니다. 최종 책임은 사용자에게 있습니다.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>if(!window.AdSafeAuth.getCurrentUser()){window.location.href='login.html';}</script>
+    <script src="main.js"></script>
+    <script>
+        (function() {
+            var apiBase = (window.ADSAFE_API_URL || '').replace(/\/$/, '');
+            var noReviewMsg = document.getElementById('no-review-msg');
+            var hasReviewMsg = document.getElementById('has-review-msg');
+            var reviewCountEl = document.getElementById('review-count');
+            var btnStartReview = document.getElementById('btn-start-review');
+
+            var ngrokHeaders = { 'ngrok-skip-browser-warning': 'true' };
+            
+            // API에서 틀린 문제 가져오기
+            fetch(apiBase + '/api/quizzes/wrong?user_id=1&workspace_id=1', { headers: ngrokHeaders })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(function(data) {
+                    var wrongQuestions = data.questions || [];
+                    
+                    if (wrongQuestions.length > 0) {
+                        noReviewMsg.style.display = 'none';
+                        hasReviewMsg.style.display = 'block';
+                        reviewCountEl.textContent = wrongQuestions.length;
+
+                        btnStartReview.addEventListener('click', function() {
+                            // 복습 세션 시작
+                            fetch(apiBase + '/api/quiz-attempts', {
+                                method: 'POST',
+                                headers: Object.assign({ 'Content-Type': 'application/json' }, ngrokHeaders),
+                                body: JSON.stringify({ user_id: 1, workspace_id: 1, total_questions: wrongQuestions.length })
+                            })
+                            .then(function(res2) { return res2.json(); })
+                            .then(function(attemptData) {
+                                var quiz = {
+                                    attemptId: attemptData.attemptId || null,
+                                    questions: wrongQuestions,
+                                    answers: []
+                                };
+                                try {
+                                    sessionStorage.setItem('adusafe_quiz', JSON.stringify(quiz));
+                                } catch (e) {
+                                    alert('저장 공간을 사용할 수 없습니다.');
+                                    return;
+                                }
+                                window.location.href = 'adusafe-quiz.html?q=1';
+                            })
+                            .catch(function(err) {
+                                console.error(err);
+                                alert('복습 세션을 시작할 수 없습니다.');
+                            });
+                        });
+                    } else {
+                        noReviewMsg.style.display = 'block';
+                        hasReviewMsg.style.display = 'none';
+                    }
+                })
+                .catch(function(err) {
+                    console.error(err);
+                    noReviewMsg.style.display = 'block';
+                    hasReviewMsg.style.display = 'none';
+                });
+        })();
+    </script>
+</body>
+</html>

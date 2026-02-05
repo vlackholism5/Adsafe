@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검수 상세 - AdSafe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 네비게이션 -->
+    <nav class="navbar navbar-custom">
+        <div class="container-main">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="index.html">AdSafe</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="index.html" class="nav-link text-decoration-none">대시보드</a>
+                    <a href="adsafe.html" class="nav-link text-decoration-none">검수하기</a>
+                    <a href="inspection-history.html" class="nav-link text-decoration-none">검수 이력</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container-main py-5">
+        <div class="mb-4">
+            <a href="inspection-history.html" class="text-decoration-none text-muted mb-2 d-inline-block">
+                <i class="bi bi-arrow-left me-1"></i>검수 이력으로 돌아가기
+            </a>
+            <h1 class="mb-2">검수 상세</h1>
+            <p class="text-muted" id="detail-subtitle">실행 ID: #<span id="detail-id"></span> | <span id="detail-date"></span></p>
+        </div>
+
+        <div id="detail-error" style="display: none;">
+            <div class="card-custom text-center py-5">
+                <p class="text-muted mb-3">해당 검수를 찾을 수 없습니다.</p>
+                <a href="inspection-history.html" class="btn btn-primary-custom">검수 이력으로</a>
+            </div>
+        </div>
+
+        <div id="detail-body" style="display: none;">
+            <!-- 기본 정보 -->
+            <div class="card-custom mb-4">
+                <h5 class="card-title">기본 정보</h5>
+                <div class="row" id="detail-meta"></div>
+            </div>
+
+            <!-- 검수된 문구 -->
+            <div class="card-custom mb-4">
+                <h5 class="card-title">검수된 문구 (문제 표현 하이라이트)</h5>
+                <div class="p-3 bg-light rounded" style="line-height:1.8; white-space:pre-wrap;" id="detail-text"></div>
+            </div>
+
+            <!-- 요약 결과 -->
+            <div class="card-custom mb-4" id="detail-summary"></div>
+
+            <!-- 상세 리스크 항목 -->
+            <div class="card-custom">
+                <h5 class="card-title">상세 리스크 항목</h5>
+                <div class="list-group list-group-flush" id="detail-findings"></div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <a href="adsafe.html" class="btn btn-primary-custom">
+                    <i class="bi bi-arrow-repeat me-2"></i>재검수하기
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-notice">
+        <div class="container-main">
+            본 서비스는 참고용이며 법적 판정이 아닙니다. 최종 책임은 사용자에게 있습니다.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>if(!window.AdSafeAuth.getCurrentUser()){window.location.href='login.html';}</script>
+    <script src="main.js"></script>
+    <script src="js/rules-data.js"></script>
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var idParam = params.get('id');
+            if (!idParam) {
+                document.getElementById('detail-error').style.display = 'block';
+                return;
+            }
+            var id = idParam;
+            var apiBase = (window.ADSAFE_API_URL || '').replace(/\/$/, '');
+
+            function escapeHtml(s) {
+                if (!s) return '';
+                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+            function showError() {
+                document.getElementById('detail-error').style.display = 'block';
+            }
+            function renderRecord(record) {
+                document.getElementById('detail-body').style.display = 'block';
+                var d = new Date(record.date);
+                document.getElementById('detail-id').textContent = record.id;
+                document.getElementById('detail-date').textContent = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+
+                document.getElementById('detail-meta').innerHTML = '<div class="col-md-6 mb-3"><strong>프로젝트:</strong> ' + escapeHtml(record.project || '-') + '</div><div class="col-md-6 mb-3"><strong>문구 제목:</strong> ' + escapeHtml(record.title || '-') + '</div>';
+
+                var rawText = record.rawText || '';
+                var findings = (record.result && record.result.findings) ? record.result.findings : [];
+                var highlightedText = escapeHtml(rawText).replace(/\n/g, '<br>');
+                findings.forEach(function(f) {
+                    var esc = escapeHtml(f.matchedText);
+                    if (esc) highlightedText = highlightedText.split(esc).join('<mark class="highlight-risk">' + esc + '</mark>');
+                });
+                document.getElementById('detail-text').innerHTML = highlightedText || escapeHtml(rawText);
+
+                var summary = (record.result && record.result.summary) ? record.result.summary : {};
+                var level = summary.level || 'none';
+                var count = summary.totalFindings != null ? summary.totalFindings : 0;
+                var msg = summary.message || '';
+                var levelText = typeof getRiskLevelText === 'function' ? getRiskLevelText(level) : level;
+                document.getElementById('detail-summary').innerHTML = '<div class="result-summary ' + level + '"><div class="d-flex align-items-center justify-content-between"><div><h4 class="mb-2">검수 결과 요약</h4><p class="mb-0">' + escapeHtml(msg) + '</p><p class="mb-0 mt-2"><small>적발 건수: <strong>' + count + '건</strong></small></p></div><div><span class="badge-custom badge-' + level + '">' + levelText + '</span></div></div></div>';
+
+                var findingsEl = document.getElementById('detail-findings');
+                if (findings.length === 0) {
+                    findingsEl.innerHTML = '<div class="list-group-item border-0 py-3 text-muted">검출된 리스크 항목이 없습니다.</div>';
+                } else {
+                    findings.forEach(function(f, idx) {
+                        var name = typeof getRiskCodeName === 'function' ? getRiskCodeName(f.riskCode) : f.riskCode;
+                        var levelText2 = typeof getRiskLevelText === 'function' ? getRiskLevelText(f.riskLevel || 'medium') : (f.riskLevel || 'medium');
+                        var div = document.createElement('div');
+                        div.className = 'list-group-item border-0 px-0 py-3' + (idx < findings.length - 1 ? ' border-bottom' : '');
+                        div.innerHTML = '<div class="d-flex justify-content-between align-items-start mb-2"><div><span class="badge-custom badge-' + (f.riskLevel || 'medium') + ' me-2">' + levelText2 + '</span><strong>' + escapeHtml(name) + '</strong><span class="text-muted small ms-2">(' + escapeHtml(f.riskCode) + ')</span></div></div><p class="mb-2"><strong>매칭 표현:</strong> <mark class="highlight-risk">' + escapeHtml(f.matchedText) + '</mark></p><p class="mb-2 text-muted">' + escapeHtml(f.explanation) + '</p><p class="mb-0"><strong>수정 가이드:</strong> <span class="text-primary">' + escapeHtml(f.suggestion) + '</span></p>';
+                        findingsEl.appendChild(div);
+                    });
+                }
+            }
+
+            fetch(apiBase + '/api/inspection-history/' + encodeURIComponent(id))
+                .then(function(res) {
+                    if (!res.ok) throw new Error(res.status);
+                    return res.json();
+                })
+                .then(function(record) {
+                    renderRecord(record);
+                })
+                .catch(function() {
+                    showError();
+                });
+        })();
+    </script>
+</body>
+</html>

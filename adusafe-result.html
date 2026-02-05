@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학습 결과 - AduSafe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-custom">
+        <div class="container-main">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="index.html">AdSafe</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="adusafe-menu.html" class="nav-link text-decoration-none">AduSafe</a>
+                    <a href="learning-dashboard.html" class="nav-link text-decoration-none">학습 현황</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-main py-5">
+        <div class="mb-4">
+            <a href="adusafe-menu.html" class="text-decoration-none text-muted mb-2 d-inline-block">
+                <i class="bi bi-arrow-left me-1"></i>학습 메뉴로
+            </a>
+            <h1 class="mb-2">학습 결과</h1>
+        </div>
+
+        <div class="card-custom mb-4 text-center" id="result-summary">
+            <div class="mb-3">
+                <i class="bi bi-trophy-fill text-warning" id="result-icon" style="font-size: 64px;"></i>
+            </div>
+            <h3 class="mb-2" id="result-title">퀴즈 완료</h3>
+            <p class="text-muted mb-0" id="result-desc">정답 <span id="result-correct">0</span> / <span id="result-total">0</span> (<span id="result-rate">0</span>%)</p>
+        </div>
+
+        <div class="card-custom mb-4">
+            <h5 class="card-title mb-3">학습 내용 정리</h5>
+            <div id="learning-summary"></div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 justify-content-between">
+            <a href="adusafe-review.html" class="btn btn-primary-custom" id="btn-review">
+                <i class="bi bi-arrow-repeat me-2"></i>틀린 문제 복습하기
+            </a>
+            <a href="learning-dashboard.html" class="btn btn-outline-custom">
+                <i class="bi bi-journal-check me-2"></i>학습 현황
+            </a>
+            <a href="adusafe-start.html" class="btn btn-outline-custom">
+                <i class="bi bi-pencil-square me-2"></i>다시 학습하기
+            </a>
+            <a href="adusafe-menu.html" class="btn btn-outline-custom">
+                <i class="bi bi-list me-2"></i>학습 메뉴로
+            </a>
+        </div>
+    </div>
+
+    <div class="footer-notice">
+        <div class="container-main">
+            본 서비스는 참고용이며 법적 판정이 아닙니다. 최종 책임은 사용자에게 있습니다.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>if(!window.AdSafeAuth.getCurrentUser()){window.location.href='login.html';}</script>
+    <script src="main.js"></script>
+    <script>
+        (function() {
+            var apiBase = (window.ADSAFE_API_URL || '').replace(/\/$/, '');
+            
+            var raw = sessionStorage.getItem('adusafe_quiz');
+            if (!raw) {
+                window.location.href = 'adusafe-menu.html';
+                return;
+            }
+            var quiz;
+            try {
+                quiz = JSON.parse(raw);
+            } catch (e) {
+                window.location.href = 'adusafe-menu.html';
+                return;
+            }
+            var questions = quiz.questions || [];
+            var answers = quiz.answers || [];
+            var attemptId = quiz.attemptId || null;
+            var total = questions.length;
+            if (total === 0) {
+                window.location.href = 'adusafe-menu.html';
+                return;
+            }
+
+            var correct = 0;
+            questions.forEach(function(q, i) {
+                if (answers[i] === q.correctIndex) correct++;
+            });
+            var rate = total ? Math.round((correct / total) * 100) : 0;
+
+            document.getElementById('result-correct').textContent = correct;
+            document.getElementById('result-total').textContent = total;
+            document.getElementById('result-rate').textContent = rate;
+
+            var resultIcon = document.getElementById('result-icon');
+            var resultTitle = document.getElementById('result-title');
+            if (rate >= 80) {
+                resultIcon.className = 'bi bi-trophy-fill text-warning';
+                resultTitle.textContent = '잘했어요!';
+            } else if (rate >= 60) {
+                resultIcon.className = 'bi bi-emoji-smile-fill text-primary';
+                resultTitle.textContent = '퀴즈 완료';
+            } else {
+                resultIcon.className = 'bi bi-arrow-repeat text-secondary';
+                resultTitle.textContent = '복습을 추천해요';
+            }
+
+            var summaryEl = document.getElementById('learning-summary');
+            var html = '';
+            questions.forEach(function(q, i) {
+                var userChoice = answers[i];
+                var isCorrect = userChoice === q.correctIndex;
+                var opt = (q.options || [])[userChoice];
+                var correctOpt = (q.options || [])[q.correctIndex];
+                html += '<div class="border rounded p-3 mb-3">';
+                html += '<div class="d-flex align-items-center gap-2 mb-2">';
+                html += '<span class="badge ' + (isCorrect ? 'bg-success' : 'bg-danger') + '">문제 ' + (i + 1) + '</span>';
+                html += '<span class="small text-muted">' + (typeof getRiskCodeName === 'function' ? getRiskCodeName(q.riskCode) : q.riskCode) + '</span>';
+                html += '</div>';
+                html += '<p class="mb-2"><strong>' + (q.stem || '') + '</strong></p>';
+                if (q.body) html += '<p class="text-muted small mb-2">' + q.body + '</p>';
+                html += '<p class="mb-1 small">선택한 답: ' + (opt != null ? opt : '-') + (isCorrect ? ' <span class="text-success">(정답)</span>' : ' <span class="text-danger">(오답)</span>') + '</p>';
+                if (!isCorrect) html += '<p class="mb-1 small text-success">정답: ' + (correctOpt != null ? correctOpt : '-') + '</p>';
+                html += '<p class="mb-0 small">' + (q.explanation || '') + '</p>';
+                if (q.suggestion) html += '<p class="mt-1 small text-muted">' + q.suggestion + '</p>';
+                html += '</div>';
+            });
+            summaryEl.innerHTML = html || '<p class="text-muted mb-0">정리할 내용이 없습니다.</p>';
+
+            // 틀린 문제 체크 (복습 버튼 표시용)
+            var wrongCount = 0;
+            questions.forEach(function(q, i) {
+                if (answers[i] !== q.correctIndex) wrongCount++;
+            });
+            var btnReview = document.getElementById('btn-review');
+            if (btnReview) btnReview.style.display = wrongCount > 0 ? '' : 'none';
+
+            // API로 답안 제출 (attemptId가 있을 때만)
+            var ngrokHeaders = { 'ngrok-skip-browser-warning': 'true' };
+            if (attemptId) {
+                var answerData = questions.map(function(q, i) {
+                    return {
+                        quizId: q.quizId,
+                        selectedIndex: answers[i] != null ? answers[i] : -1
+                    };
+                });
+                fetch(apiBase + '/api/quiz-attempts/' + attemptId + '/submit', {
+                    method: 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, ngrokHeaders),
+                    body: JSON.stringify({ answers: answerData })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    console.log('답안 제출 완료:', data);
+                })
+                .catch(function(err) {
+                    console.error('답안 제출 실패:', err);
+                });
+            }
+
+            // 세션 정리
+            try {
+                sessionStorage.removeItem('adusafe_quiz');
+            } catch (e) {}
+        })();
+    </script>
+</body>
+</html>

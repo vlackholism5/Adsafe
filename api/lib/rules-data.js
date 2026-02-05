@@ -1,0 +1,39 @@
+/**
+ * AdSafe 검수 룰 데이터 - 프론트 js/rules-data.js (ADU_RULES)와 동일
+ */
+const ADU_RULES = [
+  { riskCode: 'RISK_SUPERLATIVE_ABSOLUTE', level1: '과장표현', level2: '최상급', level3: '절대적 최상급', riskLevel: 'high', keywords: ['최고', '최상', '유일', '최대', '최대 효과', '완벽', '궁극', '종결', '끝판', '넘사벽'], explanation: '절대적 최상급 표현은 광고법상 제한될 수 있습니다.', suggestion: '"최고" 등을 "우수한" 또는 구체적 근거로 대체하세요.' },
+  { riskCode: 'RISK_SUPERLATIVE_RANK', level1: '과장표현', level2: '순위 주장', level3: '지역/업계 1위', riskLevel: 'high', keywords: ['1위', '1등', '대표', '최다', '가장 많이 선택'], explanation: '순위·대표성 주장은 근거가 필요합니다.', suggestion: '순위 근거(조사 기관·기간)를 명시하세요.' },
+  { riskCode: 'RISK_SUPERLATIVE_MARKETING', level1: '과장표현', level2: '마케팅 수식', level3: '극대화 수식어', riskLevel: 'medium', keywords: ['끝판왕', '명품', '마스터', '프리미엄', '하이엔드', '올인원', '토탈 솔루션'], explanation: '극대화 수식어는 과장으로 제한될 수 있습니다.', suggestion: '구체적 기능·효과로 대체하세요.' },
+  { riskCode: 'RISK_SUPERLATIVE_FIRST', level1: '과장표현', level2: '최초 주장', level3: '최초·유일성', riskLevel: 'high', keywords: ['최초', '처음 선보이는', '유일'], explanation: '최초·유일성 주장은 입증이 필요합니다.', suggestion: '근거(특허·출처)를 명시하세요.' },
+  { riskCode: 'RISK_GUARANTEE_RESULT', level1: '효과보장', level2: '결과 단정', level3: '완치/해결 보장', riskLevel: 'high', keywords: ['완치', '해결', '치료 완료', '개선 완료', '없애드립니다', '사라집니다'], explanation: '결과를 단정하는 효과 보장 표현은 의료광고에서 금지됩니다.', suggestion: '결과 단정을 피하고 "도움이 될 수 있습니다" 등으로 완화하세요.' },
+  { riskCode: 'RISK_GUARANTEE_ZERO_RISK', level1: '효과보장', level2: '무위험 주장', level3: '부작용 없음', riskLevel: 'high', keywords: ['부작용 없음', '부작용 없이', '부작용 없다', '부작용 없어요', '부작용 x', '통증 없음', '출혈 없음', '재발 없음', '위험 없음', '걱정 없이'], explanation: '부작용·위험 없음을 단정하는 표현은 제한됩니다.', suggestion: '"부작용이 적은 편" 또는 "의사와 상담 후" 등을 사용하세요.' },
+  { riskCode: 'RISK_GUARANTEE_CERTAINTY', level1: '효과보장', level2: '100% 의미', level3: '확정성', riskLevel: 'high', keywords: ['반드시', '무조건', '확실하게', '100%', '전부', '완전히'], explanation: '100%·확정적 표현은 제한될 수 있습니다.', suggestion: '"대부분"·"많은 경우" 등으로 완화하세요.' },
+  { riskCode: 'RISK_GUARANTEE_RESPONSIBILITY', level1: '효과보장', level2: '책임 보장', level3: '책임·약속', riskLevel: 'high', keywords: ['책임진료', '책임집니다', '보장합니다', '약속드립니다', '끝까지 관리'], explanation: '책임·보장·약속 표현은 제한될 수 있습니다.', suggestion: '법적 책임 범위를 넘지 않도록 표현을 완화하세요.' },
+  { riskCode: 'RISK_DURATION_FIXED', level1: '치료과정', level2: '기간 단정', level3: '고정 기간', riskLevel: 'medium', keywords: ['일 완성', '일주일이면 끝', '하루면 충분', '한 달 내', '기간 내 완치'], regex: ['\\d+\\s*일\\s*완성', '\\d+\\s*일\\s*완치', '\\d+\\s*일이면\\s*끝', '\\d+\\s*주\\s*완성'], explanation: '치료 기간을 단정하는 표현은 제한됩니다.', suggestion: '개인차가 있음을 명시하거나 기간 표현을 완화하세요.' },
+  { riskCode: 'RISK_DURATION_INSTANT', level1: '치료과정', level2: '즉시성', level3: '즉각 효과', riskLevel: 'medium', keywords: ['바로 효과', '즉각 개선', '당일 퇴원'], explanation: '즉시·당일 효과 단정은 제한될 수 있습니다.', suggestion: '개인차·조건을 함께 안내하세요.' },
+  { riskCode: 'RISK_DURATION_SIMPLICITY', level1: '치료과정', level2: '단순화', level3: '쉬움 강조', riskLevel: 'low', keywords: ['간단하게', '쉽게 해결', '부담 없이'], explanation: '치료를 과도하게 단순화하는 표현은 오인을 줄 수 있습니다.', suggestion: '필요 시 "상담 후 결정" 등을 함께 안내하세요.' },
+  { riskCode: 'RISK_FEAR_DISEASE', level1: '공포조성', level2: '질병 과장', level3: '위험 강조', riskLevel: 'high', keywords: ['방치하면 위험', '방치하면', '악화됩니다', '심각한 문제'], explanation: '공포를 조장하는 표현은 제한됩니다.', suggestion: '공포 조성 대신 "정기 검진 권유" 등 건전한 안내로 대체하세요.' },
+  { riskCode: 'RISK_FEAR_URGENT', level1: '공포조성', level2: '시급성', level3: '시간 압박', riskLevel: 'medium', keywords: ['지금 안 하면 늦습니다', '더 늦기 전에'], explanation: '시간 압박·시급성 유도는 제한될 수 있습니다.', suggestion: '과도한 압박 표현을 줄이세요.' },
+  { riskCode: 'RISK_APPEARANCE_SHAMING', level1: '외모조장', level2: '외모 비하', level3: '신체 비하', riskLevel: 'high', keywords: ['코끼리 다리', '뼈벅지', '흉한'], explanation: '신체·외모 비하는 제한됩니다.', suggestion: '비하 표현을 제거하세요.' },
+  { riskCode: 'RISK_APPEARANCE_IDEAL', level1: '외모조장', level2: '이상화', level3: '미화 표현', riskLevel: 'medium', keywords: ['여신', '조각', '완벽한 몸매'], explanation: '이상화·미화 표현은 과장으로 제한될 수 있습니다.', suggestion: '과도한 미화 표현을 완화하세요.' },
+  { riskCode: 'RISK_EXPERIENCE_REVIEW', level1: '경험담', level2: '후기', level3: '환자 후기', riskLevel: 'medium', keywords: ['실제 후기', '리얼 후기', '만족 후기', '환자 후기'], explanation: '환자 후기·경험담은 전형성·과장 여부에 따라 제한될 수 있습니다.', suggestion: '개인 사례보다 일반화된 표현을 사용하세요.' },
+  { riskCode: 'RISK_EXPERIENCE_BEFORE_AFTER', level1: '경험담', level2: '전후', level3: '전후 사례', riskLevel: 'medium', keywords: ['before', 'after', '시술 전후', '변화 비교'], explanation: '전후 사례는 전형성이 없으면 제한될 수 있습니다.', suggestion: '전형적 사례임을 명시하거나 일반화된 표현을 사용하세요.' },
+  { riskCode: 'RISK_EXPERIENCE_NARRATIVE', level1: '경험담', level2: '서사', level3: '사례 스토리', riskLevel: 'medium', keywords: ['씨 사례', '고객 경험담', '치료 스토리'], explanation: '개별 사례 스토리는 과장·오인 소지가 있을 수 있습니다.', suggestion: '사례는 참고 수준으로만 안내하세요.' },
+  { riskCode: 'RISK_COMPARISON_OTHER', level1: '비교', level2: '타기관 비교', level3: '상대 우위', riskLevel: 'medium', keywords: ['다른 병원과 달리', '일반 병원과는', '다른 곳보다'], explanation: '타 기관과의 비교는 객관적 근거가 필요합니다.', suggestion: '객관적 데이터가 있을 때만 비교하고 근거를 명시하세요.' },
+  { riskCode: 'RISK_COMPARISON_METHOD', level1: '비교', level2: '시술 비교', level3: '방식 우월', riskLevel: 'medium', keywords: ['우리만 가능한', '유일한 방식'], explanation: '방식·시술 우월 주장은 근거가 필요합니다.', suggestion: '근거를 명시하세요.' },
+  { riskCode: 'RISK_COMPARISON_DISPARAGE', level1: '비방', level2: '부정 표현', level3: '비하', riskLevel: 'high', keywords: ['아무데서나 받지 마세요'], explanation: '타 기관 비하·비방 표현은 제한됩니다.', suggestion: '비방 표현을 제거하세요.' },
+  { riskCode: 'RISK_INDUCEMENT_DISCOUNT', level1: '유인', level2: '할인', level3: '금전 혜택', riskLevel: 'medium', keywords: ['무료', '할인', '반값', '이벤트', '특가', '혜택', '프로모션'], explanation: '이벤트·할인 표현은 이벤트 기간, 할인율, 적용 대상(시술/진료)을 함께 명시하면 리스크를 줄일 수 있습니다.', suggestion: '이벤트 기간(시작~종료), 할인율, 참여·적용 조건을 광고에 명시하세요.' },
+  { riskCode: 'RISK_INDUCEMENT_CONDITION', level1: '유인', level2: '조건', level3: '조건부 혜택', riskLevel: 'medium', keywords: ['선착순', '한정', '당첨자', '오늘만', '후기 조건'], explanation: '조건부 혜택은 기간·내용이 불명확하면 제한될 수 있습니다.', suggestion: '이벤트 기간(시작/종료)과 적용 대상(시술/진료)을 명시하세요.' },
+  { riskCode: 'RISK_INDUCEMENT_BUNDLE', level1: '유인', level2: '묶음', level3: '끼워팔기', riskLevel: 'low', keywords: ['패키지', '세트'], explanation: '패키지·세트는 구성·가격이 명확해야 합니다.', suggestion: '구성 항목과 가격을 명시하세요.' },
+  { riskCode: 'RISK_PRICE_EXCESSIVE', level1: '가격', level2: '과도 할인', level3: '50% 이상', riskLevel: 'high', keywords: ['반값 이벤트'], explanation: '할인율 50% 이상은 고위험으로 제한될 수 있습니다.', suggestion: '할인율을 50% 미만으로 하거나, 조건·기간을 명확히 하세요.' },
+  { riskCode: 'RISK_QUALIFICATION_FALSE', level1: '자격', level2: '허위', level3: '근거 없음', riskLevel: 'high', keywords: ['전문병원', '인증 병원', '국내 유일', '세계 최초', '공인'], explanation: '근거 없는 자격·인증 표시는 제한됩니다.', suggestion: '인증·자격은 실제 취득 여부를 확인하고 근거를 제시하세요.' },
+  { riskCode: 'RISK_QUALIFICATION_MIXED', level1: '자격', level2: '혼동', level3: '병기 오류', riskLevel: 'high', keywords: ['전문의', '비전문'], explanation: '전문의와 비전문 과목 혼동은 오인을 줄 수 있습니다.', suggestion: '과목·자격을 정확히 구분해 표기하세요.' },
+  { riskCode: 'RISK_QUALIFICATION_TITLE', level1: '자격', level2: '명칭', level3: '임의 타이틀', riskLevel: 'medium', keywords: ['명의', '박사'], explanation: '임의 타이틀·명칭은 오인을 줄 수 있습니다.', suggestion: '정식 자격·직함만 사용하세요.' },
+  { riskCode: 'RISK_INSURANCE_COVERAGE', level1: '보험오인', level2: '실손·급여', level3: '보험 적용 암시', riskLevel: 'medium', keywords: ['실손보험 적용', '실비 가능', '보험 처리', '급여 적용'], explanation: '보험 적용은 조건·한도가 다를 수 있어 오인이 있을 수 있습니다.', suggestion: '"가입 조건에 따라 상이" 등 조건을 함께 안내하세요.' },
+  { riskCode: 'RISK_INSURANCE_FREE', level1: '보험오인', level2: '비용 경감', level3: '무료·환급 오인', riskLevel: 'high', keywords: ['보험으로 무료', '본인부담 없음', '0원 치료'], explanation: '보험으로 무료·0원 등은 조건에 따라 오인을 줄 수 있습니다.', suggestion: '본인 부담 범위를 명시하세요.' },
+  { riskCode: 'RISK_INSURANCE_SIMPLIFY', level1: '보험오인', level2: '절차 단순화', level3: '자동 처리 암시', riskLevel: 'medium', keywords: ['보험 자동 처리', '서류 필요 없음', '알아서 처리'], explanation: '보험 절차 단순화 표현은 오인을 줄 수 있습니다.', suggestion: '필요 서류·절차를 안내하세요.' },
+  { riskCode: 'RISK_INSURANCE_GUARANTEE', level1: '보험오인', level2: '보장 단정', level3: '지급 보장', riskLevel: 'high', keywords: ['보험금 보장', '100% 지급', '무조건 지급'], explanation: '보험금 지급 보장 표현은 제한됩니다.', suggestion: '지급 조건·한도를 명시하세요.' },
+];
+
+module.exports = { ADU_RULES };

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계정 설정 - AdSafe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-custom">
+        <div class="container-main">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <a class="navbar-brand" href="index.html">AdSafe</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="inspection-history.html" class="nav-link text-decoration-none">검수 이력</a>
+                    <a href="learning-dashboard.html" class="nav-link text-decoration-none">학습 현황</a>
+                    <a href="account.html" class="nav-link text-decoration-none">계정</a>
+                    <a href="login.html" class="nav-link text-decoration-none" id="nav-logout">로그아웃</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-main py-5">
+        <div class="mb-4">
+            <a href="index.html" class="text-decoration-none text-muted mb-2 d-inline-block">
+                <i class="bi bi-arrow-left me-1"></i>메인으로
+            </a>
+            <h1 class="mb-2">계정 설정</h1>
+            <p class="text-muted mb-0">계정 정보를 확인하고 회원탈퇴를 할 수 있습니다.</p>
+        </div>
+
+        <div class="card-custom p-4 mb-4">
+            <h5 class="mb-3">내 정보</h5>
+            <dl class="row mb-0">
+                <dt class="col-sm-3">이메일</dt>
+                <dd class="col-sm-9" id="account-email">-</dd>
+                <dt class="col-sm-3">이름</dt>
+                <dd class="col-sm-9" id="account-name">-</dd>
+            </dl>
+        </div>
+
+        <div class="card-custom p-4 border-danger">
+            <h5 class="mb-3 text-danger">회원탈퇴</h5>
+            <p class="text-muted small mb-3">탈퇴 시 계정이 삭제되며, 검수 이력·학습 이력 등 저장된 데이터가 모두 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</p>
+            <button type="button" class="btn btn-outline-danger btn-sm" id="btn-withdraw-open">회원탈퇴</button>
+        </div>
+    </div>
+
+    <!-- 탈퇴 확인 모달 -->
+    <div class="modal fade" id="withdrawModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">회원탈퇴 확인</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">탈퇴를 진행하려면 비밀번호를 입력하세요.</p>
+                    <div class="mb-3">
+                        <label for="withdraw-password" class="form-label">비밀번호</label>
+                        <input type="password" class="form-control form-control-custom" id="withdraw-password" placeholder="비밀번호">
+                    </div>
+                    <div id="withdraw-error" class="alert alert-danger py-2 small d-none" role="alert"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-danger" id="btn-withdraw-confirm">탈퇴하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-notice">
+        <div class="container-main">
+            본 서비스는 참고용이며 법적 판정이 아닙니다. 최종 책임은 사용자에게 있습니다.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        (function() {
+            var user = window.AdSafeAuth.getCurrentUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('account-email').textContent = user.email;
+            document.getElementById('account-name').textContent = user.name || user.email;
+
+            document.getElementById('nav-logout').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.AdSafeAuth.clearCurrentUser();
+                window.location.href = 'login.html';
+            });
+
+            document.getElementById('btn-withdraw-open').addEventListener('click', function() {
+                document.getElementById('withdraw-password').value = '';
+                document.getElementById('withdraw-error').classList.add('d-none');
+                var modal = new bootstrap.Modal(document.getElementById('withdrawModal'));
+                modal.show();
+            });
+
+            document.getElementById('btn-withdraw-confirm').addEventListener('click', function() {
+                var errEl = document.getElementById('withdraw-error');
+                errEl.classList.add('d-none');
+                var password = document.getElementById('withdraw-password').value;
+                var stored = window.AdSafeAuth.findUserByEmail(user.email);
+                if (!stored || String(stored.password) !== String(password)) {
+                    errEl.textContent = '비밀번호가 일치하지 않습니다.';
+                    errEl.classList.remove('d-none');
+                    return;
+                }
+                window.AdSafeAuth.removeUser(user.email);
+                window.AdSafeAuth.clearCurrentUser();
+                try {
+                    localStorage.removeItem('inspection_history');
+                    localStorage.removeItem('adusafe_history');
+                    localStorage.removeItem('adusafe_wrong_for_review');
+                } catch (e) {}
+                bootstrap.Modal.getInstance(document.getElementById('withdrawModal')).hide();
+                window.location.href = 'login.html';
+            });
+        })();
+    </script>
+</body>
+</html>
